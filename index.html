@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Sign in · Test EMR (fake patients)</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="top"></div>
+<div class="wrap">
+  <div class="login">
+    <div class="card">
+      <h2>Sign in</h2>
+      <p class="muted">Test EMR training site. All 100 patients are fictional.</p>
+      <form id="signin-form" autocomplete="off">
+        <div class="field">
+          <label for="username">User name</label>
+          <input type="text" id="username" name="username" autocomplete="off" autocapitalize="none" spellcheck="false">
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" autocomplete="off">
+        </div>
+        <button id="signin" type="submit">Sign in</button>
+        <div class="err" id="err" role="alert"></div>
+      </form>
+    </div>
+    <p class="muted">Practice sign-in for testing software. This is not real security and no real patient
+      information is stored here.</p>
+  </div>
+</div>
+<footer>Test EMR · training site · fictional data only</footer>
+<script src="assets/app.js"></script>
+<script>
+document.getElementById("top").innerHTML = topbar("login");
+if (signedIn()) location.replace("patients.html");
+document.getElementById("signin-form").addEventListener("submit", ev => {
+  ev.preventDefault();
+  const u = document.getElementById("username").value.trim();
+  const p = document.getElementById("password").value;
+  if (u === TEST_USER && p === TEST_PASSWORD) {
+    try { sessionStorage.setItem(SESSION_KEY, u); } catch (e) {}
+    const next = new URLSearchParams(location.search).get("next");
+    location.href = next && /^[\w.-]+\.html(\?[\w=&.-]*)?$/.test(next) ? next : "patients.html";
+  } else {
+    document.getElementById("err").textContent = "Incorrect user name or password.";
+    document.getElementById("password").value = "";
+  }
+});
+</script>
+</body>
+</html>

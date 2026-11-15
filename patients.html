@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Patient list · Test EMR (fake patients)</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="top"></div>
+<div class="wrap">
+  <div class="card">
+    <div class="listhead">
+      <div class="grow">
+        <label for="search">Search by last name, first name, chart # or date of birth</label>
+        <input type="search" id="search" placeholder="e.g. Pemberton, T10042 or 05/20/1959" autocomplete="off">
+      </div>
+      <button class="ghost" id="clear" type="button">Clear</button>
+    </div>
+    <p class="muted" style="margin:10px 0 0"><b>All 100 patients on this list are fictional</b>, invented for software
+      testing. Any resemblance to real people is coincidental.</p>
+    <div class="count" id="count"></div>
+    <table id="patients">
+      <thead><tr><th>Chart #</th><th>Patient</th><th>DOB</th><th class="hide-sm">Sex</th>
+        <th class="hide-sm">Insurance</th><th class="hide-sm">Physician</th><th>Last visit</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+<footer>Test EMR · training site · fictional data only</footer>
+<script src="assets/app.js"></script>
+<script>
+if (requireSignIn()) {
+  document.getElementById("top").innerHTML = topbar("patients");
+  const body = document.querySelector("#patients tbody");
+  const box = document.getElementById("search");
+  let all = [];
+  function render() {
+    const q = box.value.trim().toLowerCase();
+    const rows = all.filter(p => !q || `${p.last}, ${p.first} ${p.first} ${p.last} ${p.mrn} ${p.dob}`.toLowerCase().includes(q));
+    body.innerHTML = rows.map(p => `<tr data-mrn="${esc(p.mrn)}" class="patient-row">
+      <td>${esc(p.mrn)}</td><td><a href="chart.html?mrn=${encodeURIComponent(p.mrn)}" class="patient-link">${esc(p.last)}, ${esc(p.first)}</a></td>
+      <td>${esc(p.dob)}</td><td class="hide-sm">${esc(p.sex)}</td><td class="hide-sm">${esc(p.payer)}</td>
+      <td class="hide-sm">${esc(p.physician)}</td><td>${esc(p.visits[0] ? p.visits[0].date : "")}</td></tr>`).join("");
+    document.getElementById("count").textContent = `${rows.length} of ${all.length} fictional patients`;
+  }
+  body.addEventListener("click", ev => {
+    const tr = ev.target.closest("tr[data-mrn]");
+    if (tr && ev.target.tagName !== "A") location.href = "chart.html?mrn=" + encodeURIComponent(tr.dataset.mrn);
+  });
+  box.addEventListener("input", render);
+  document.getElementById("clear").addEventListener("click", () => { box.value = ""; render(); box.focus(); });
+  loadPatients().then(p => { all = p; render(); });
+}
+</script>
+</body>
+</html>

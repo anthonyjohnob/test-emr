@@ -1,0 +1,98 @@
+/* Test EMR (training site). Fictional patients only. Generic EMR layout; no real product's branding. */
+:root {
+  --bar: #1f3a56; --bar2: #2b4a68; --ink: #1d2731; --muted: #5f6f7f; --line: #d3dbe3; --bg: #e9edf1; --card: #ffffff;
+  --blue: #2e6da4; --blue-d: #245a88; --red: #b3261e; --yellow: #fff6a8; --yellow-b: #e3c949; --yellow-d: #6b5600;
+  --ok: #1e7b4a; --warn: #a86b00;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font: 14px/1.45 "Segoe UI", Tahoma, Arial, sans-serif; background: var(--bg); color: var(--ink); }
+a { color: var(--blue); }
+.topbar { background: var(--bar); color: #fff; display: flex; align-items: center; gap: 14px; padding: 8px 16px; flex-wrap: wrap; }
+.topbar .brand { font-weight: 700; font-size: 16px; letter-spacing: .02em; }
+.topbar .sp { flex: 1; }
+.topbar a, .topbar button.link { color: #cfe2f5; text-decoration: none; background: none; border: 0; font: inherit; cursor: pointer; padding: 0; }
+.ribbon { background: var(--red); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .1em; padding: 2px 8px; border-radius: 3px; }
+.fakebar { background: #fdecea; color: #7a1c15; border-bottom: 1px solid #f1b8b2; padding: 6px 16px; font-size: 13px; }
+.wrap { padding: 16px; max-width: 1240px; margin: 0 auto; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 12px 14px; margin-bottom: 12px; }
+.card h3 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--bar2); }
+label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+input[type=text], input[type=password], input[type=search], textarea {
+  border: 1px solid #9fb0c0; border-radius: 3px; padding: 6px 8px; font: inherit; width: 100%; background: #fff; }
+button, .btn { background: var(--blue); color: #fff; border: 0; border-radius: 3px; padding: 7px 14px; font: inherit; cursor: pointer; }
+button:hover { background: var(--blue-d); }
+button.ghost { background: #e5ebf0; color: var(--bar); border: 1px solid #b8c6d3; }
+button.ghost:hover { background: #d8e1e8; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border-bottom: 1px solid #e3e8ed; padding: 6px 8px; text-align: left; vertical-align: top; }
+th { background: #f3f6f8; font-size: 12px; color: var(--muted); font-weight: 600; }
+.muted { color: var(--muted); font-size: 12px; }
+.err { color: var(--red); font-size: 13px; min-height: 18px; }
+
+/* login */
+.login { max-width: 380px; margin: 56px auto; }
+.login .card { padding: 22px 24px; }
+.login h2 { margin: 0 0 4px; font-size: 20px; }
+.login .field { margin: 14px 0; }
+
+/* patient list */
+.listhead { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; }
+.listhead .grow { flex: 1; min-width: 220px; }
+#patients tbody tr { cursor: pointer; }
+#patients tbody tr:hover { background: #eef4fa; }
+.count { font-size: 12px; color: var(--muted); margin: 8px 0; }
+
+/* chart */
+.pthdr { background: var(--bar2); color: #fff; border-radius: 4px; padding: 10px 14px; display: flex; gap: 26px; align-items: center; flex-wrap: wrap; }
+.pthdr .nm { font-size: 19px; font-weight: 600; }
+.pthdr .f small { display: block; color: #b8cde0; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+.pthdr .fake { margin-left: auto; background: var(--red); padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+.tabs { display: flex; gap: 2px; margin: 10px 0 0; flex-wrap: wrap; }
+.tabs span { background: #d6dee6; padding: 6px 14px; border-radius: 3px 3px 0 0; color: #50606f; }
+.tabs span.on { background: #fff; font-weight: 600; color: var(--ink); }
+.tabs span.off { opacity: .55; cursor: not-allowed; }
+.sumgrid { display: grid; grid-template-columns: 1fr 1.35fr; gap: 12px; background: #fff; border: 1px solid var(--line);
+  border-top: 0; padding: 12px; border-radius: 0 4px 4px 4px; }
+.sumgrid .card { margin: 0 0 12px; }
+.kv { display: grid; grid-template-columns: auto 1fr 1fr; gap: 2px 14px; font-size: 13px; }
+.kv b { color: var(--muted); font-weight: 600; font-size: 12px; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; }
+.pill.Approved { background: #dff3e7; color: var(--ok); } .pill.Pending { background: #fbf1dc; color: var(--warn); }
+.pill.Denied { background: #fbe1e0; color: var(--red); }
+ul.plain { margin: 0; padding-left: 18px; }
+
+/* comments: yellow panel */
+#comments { background: var(--yellow); border: 1px solid var(--yellow-b); border-left: 6px solid #e0b400; border-radius: 4px;
+  padding: 10px 14px; margin: 12px 0; box-shadow: 0 2px 4px rgba(0,0,0,.08); }
+#comments .head { display: flex; align-items: center; gap: 10px; }
+#comments h4 { margin: 0; font-size: 13px; letter-spacing: .06em; color: var(--yellow-d); text-transform: uppercase; flex: 1; }
+.comment { border-top: 1px dashed #d9c35a; padding: 6px 0; white-space: pre-wrap; }
+.comment:first-of-type { border-top: 0; }
+.comment .meta { display: block; font-size: 11px; color: #7a6a20; white-space: normal; }
+#comment-list:empty::before { content: "No comments yet."; color: #7a6a20; font-size: 13px; }
+
+/* comment dialog */
+.modal { position: fixed; inset: 0; background: rgba(10,20,30,.45); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 10; }
+.modal.open { display: flex; }
+.modal .box { background: #fff; border-radius: 6px; padding: 18px 20px; width: 460px; max-width: 100%; box-shadow: 0 10px 30px rgba(0,0,0,.3); }
+.modal h3 { margin: 0 0 8px; }
+.modal textarea { min-height: 110px; resize: vertical; }
+.modal .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+
+footer { text-align: center; color: var(--muted); font-size: 12px; padding: 18px 16px 28px; }
+
+@media (max-width: 860px) {
+  .sumgrid { grid-template-columns: 1fr; }
+  .hide-sm { display: none; }
+}
+
+/* narrow screens: wide tables scroll inside their card, never the page */
+.card { overflow-x: auto; }
+.sumgrid > div { min-width: 0; }
+@media (max-width: 560px) {
+  .wrap { padding: 10px 16px; }
+  .pthdr { gap: 12px 18px; }
+  .pthdr .fake { margin-left: 0; }
+  .topbar { gap: 8px 12px; }
+}

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Summary · Test EMR (fake patients)</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="top"></div>
+<div class="wrap">
+  <div id="chart"><p class="muted">Loading…</p></div>
+</div>
+
+<div class="modal" id="comment-dialog" role="dialog" aria-modal="true" aria-labelledby="comment-title">
+  <div class="box">
+    <h3 id="comment-title">Add a comment</h3>
+    <p class="muted" id="comment-for"></p>
+    <label for="comment-text">Comment</label>
+    <textarea id="comment-text" maxlength="1000"></textarea>
+    <div class="err" id="comment-err"></div>
+    <div class="row">
+      <button class="ghost" type="button" id="cancel-comment">Cancel</button>
+      <button type="button" id="save-comment">Save comment</button>
+    </div>
+  </div>
+</div>
+
+<footer>Test EMR · training site · fictional data only · comments are kept only in this browser</footer>
+<script src="assets/app.js"></script>
+<script>
+if (requireSignIn()) {
+  document.getElementById("top").innerHTML = topbar("chart");
+  const mrn = new URLSearchParams(location.search).get("mrn");
+  let memoryOnly = null;          // if this browser blocks storage, comments live only until the page closes
+
+  function commentsHtml(p) {
+    const list = memoryOnly || getComments(p.mrn);
+    return list.slice().reverse().map(c => `<div class="comment">${esc(c.text)}<span class="meta">${esc(c.user)} · ${esc(c.time)}</span></div>`).join("");
+  }
+
+  function render(p) {
+    const inj = p.injections.slice(0, 10);
+    document.title = `${p.last}, ${p.first} · Summary · Test EMR (fake patients)`;
+    document.getElementById("chart").innerHTML = `
+      <div class="pthdr" id="patient-header">
+        <div><span class="nm" id="hdr-name">${esc(p.last)}, ${esc(p.first)}</span></div>
+        <div class="f"><small>DOB</small><span id="hdr-dob">${esc(p.dob)}</span> (${p.age} y)</div>
+        <div class="f"><small>Sex</small>${esc(p.sex)}</div>
+        <div class="f"><small>Chart #</small><span id="hdr-mrn">${esc(p.mrn)}</span></div>
+        <div class="f"><small>Insurance</small>${esc(p.payer)}<br><span class="muted" style="color:#b8cde0">ID ${esc(p.member_id)}</span></div>
+        <div class="f hide-sm"><small>Physician</small>${esc(p.physician)}</div>
+        <span class="fake">FAKE PATIENT</span>
+      </div>
+      <div class="tabs" role="tablist">
+        <span class="on" role="tab" aria-selected="true">Summary</span>
+        <span class="off" title="Not part of this test site">Exam</span><span class="off" title="Not part of this test site">Imaging</span>
+        <span class="off" title="Not part of this test site">Procedures</span><span class="off" title="Not part of this test site">Documents</span>
+        <span class="off" title="Not part of this test site">Billing</span>
+      </div>
+      <div class="sumgrid">
+        <div>
+          <div id="comments">
+            <div class="head"><h4>Comments</h4><button type="button" id="add-comment">Comment</button></div>
+            <div id="comment-list">${commentsHtml(p)}</div>
+          </div>
+          <div class="card"><h3>Problems</h3><table><tbody>${p.problems.map(x =>
+            `<tr><td>${esc(x.desc)}</td><td>${esc(x.eye)}</td><td class="muted">${esc(x.code)}</td></tr>`).join("")}</tbody></table></div>
+          <div class="card"><h3>Eye measurements (last visit)</h3>
+            <div class="kv"><b></b><b>OD (right)</b><b>OS (left)</b>
+              <span>Visual acuity</span><span>${esc(p.va.OD)}</span><span>${esc(p.va.OS)}</span>
+              <span>IOP (mmHg)</span><span>${p.iop.OD}</span><span>${p.iop.OS}</span>
+              <span>OCT central thickness (µm)</span><span>${p.cst.OD}</span><span>${p.cst.OS}</span></div>
+            <p class="muted" style="margin:6px 0 0">OCT ${esc(p.last_oct)}</p></div>
+          <div class="card"><h3>Medications</h3><ul class="plain">${[...p.eye_meds, ...p.meds].map(m => `<li>${esc(m)}</li>`).join("")}</ul></div>
+          <div class="card"><h3>Allergies</h3>${esc(p.allergies)}</div>
+          <div class="card"><h3>Contacts</h3><div class="kv" style="grid-template-columns:auto 1fr">
+            <span class="muted">Phone</span><span>${esc(p.phone)}</span><span class="muted">Primary care</span><span>${esc(p.pcp)}</span></div></div>
+        </div>
+        <div>
+          <div class="card"><h3>Prior authorizations</h3><table id="prior-auths">
+            <thead><tr><th>Payer</th><th>Drug</th><th>Eye</th><th>Status</th><th>Auth / ref #</th><th>Valid</th><th>Units</th></tr></thead>
+            <tbody>${p.prior_auths.map(a => `<tr><td>${esc(a.payer)}</td><td>${esc(a.drug)}</td><td>${esc(a.eye)}</td>
+              <td><span class="pill ${esc(a.status)}">${esc(a.status)}</span></td><td>${esc(a.auth)}</td>
+              <td>${a.valid_from ? esc(a.valid_from) + " – " + esc(a.valid_to) : "—"}</td><td>${a.units || "—"}</td></tr>`).join("")}</tbody></table></div>
+          <div class="card"><h3>Injection history</h3><table id="injections">
+            <thead><tr><th>Date</th><th>Drug</th><th>Eye</th><th>Code</th></tr></thead>
+            <tbody>${inj.map(i => `<tr><td>${esc(i.date)}</td><td>${esc(i.drug)}</td><td>${esc(i.eye)}</td><td class="muted">${esc(i.code)}</td></tr>`).join("")}</tbody></table>
+            ${p.injections.length > inj.length ? `<p class="muted" style="margin:6px 0 0">${p.injections.length - inj.length} earlier injection(s) not shown</p>` : ""}</div>
+          <div class="card"><h3>Recent visits</h3><table>
+            <thead><tr><th>Date</th><th>Provider</th><th>Reason</th></tr></thead>
+            <tbody>${p.visits.map(v => `<tr><td>${esc(v.date)}</td><td>${esc(v.provider)}</td><td>${esc(v.reason)}</td></tr>`).join("")}</tbody></table></div>
+        </div>
+      </div>`;
+    document.getElementById("add-comment").addEventListener("click", () => openDialog(p));
+  }
+
+  const dlg = document.getElementById("comment-dialog");
+  const txt = document.getElementById("comment-text");
+  let current = null;
+  function openDialog(p) {
+    current = p;
+    document.getElementById("comment-for").textContent = `${p.last}, ${p.first} · ${p.mrn} (fictional patient)`;
+    document.getElementById("comment-err").textContent = "";
+    txt.value = "";
+    dlg.classList.add("open");
+    txt.focus();
+  }
+  function closeDialog() { dlg.classList.remove("open"); }
+  document.getElementById("cancel-comment").addEventListener("click", closeDialog);
+  dlg.addEventListener("click", ev => { if (ev.target === dlg) closeDialog(); });
+  document.addEventListener("keydown", ev => { if (ev.key === "Escape" && dlg.classList.contains("open")) closeDialog(); });
+  document.getElementById("save-comment").addEventListener("click", () => {
+    const text = txt.value.trim();
+    if (!text) { document.getElementById("comment-err").textContent = "Type a comment first."; return; }
+    const list = memoryOnly || getComments(current.mrn);
+    list.push({text, user: signedIn(), time: nowStamp()});
+    if (!memoryOnly && !saveComments(current.mrn, list)) memoryOnly = list;
+    document.getElementById("comment-list").innerHTML = commentsHtml(current);
+    closeDialog();
+  });
+
+  loadPatients().then(all => {
+    const p = all.find(x => x.mrn === mrn);
+    if (!p) {
+      document.getElementById("chart").innerHTML = `<div class="card">No fictional patient with chart # ${esc(mrn)}.
+        <a href="patients.html">Back to the patient list</a></div>`;
+      return;
+    }
+    render(p);
+  });
+}
+</script>
+</body>
+</html>
